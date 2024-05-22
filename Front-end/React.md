@@ -735,3 +735,190 @@ class MyComponent extends React.Component {
   }
 };
 ```
+
+## Use State to Toggle an Element
+
+Sometimes you might need to know the previous state when updating the state. 
+However, state updates may be asynchronous - this means React may batch multiple `setState()` calls into a single update. This means you can't rely on the previous value of `this.state` or `this.props` when calculating the next value. 
+So, you should not use code like this:
+
+```Javascript
+this.setState({
+  counter: this.state.counter + this.props.increment
+});
+```
+
+Instead, you should pass `setState` a function that allows you to access state and props. 
+Using a function with setState guarantees you are working with the most current values of state and props. 
+This means that the above should be rewritten as:
+
+```Javascript
+this.setState((state, props) => ({
+  counter: state.counter + props.increment
+}));
+```
+
+You can also use a form without props if you need only the state:
+
+```Javascript
+this.setState(state => ({
+  counter: state.counter + 1
+}));
+```
+
+Note that you have to wrap the object literal in parentheses, otherwise JavaScript thinks it's a block of code.
+
+```Javascript
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      visibility: false
+    };
+    this.toggleVisibility = this.toggleVisibility.bind(this);
+  }
+  
+  toggleVisibility() {
+    this.setState(prevState => ({
+      visibility: !prevState.visibility
+    }));
+  }
+
+  render() {
+    return (
+      <div>
+        <button onClick={this.toggleVisibility}>Click Me</button>
+        {this.state.visibility && <h1>Now you see me!</h1>}
+      </div>
+    );
+  }
+}
+```
+
+## Write a Simple Counter
+
+You can design a more complex stateful component by combining the concepts covered so far. 
+These include initializing state, writing methods that set state, and assigning click handlers to trigger these methods.
+
+```Javascript
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      count: 0
+    };
+    this.increment = this.increment.bind(this);
+    this.decrement = this.decrement.bind(this);
+    this.reset = this.reset.bind(this);
+  }
+
+  increment() {
+    this.setState(prevState => ({
+      count: prevState.count + 1
+    }));
+  }
+
+  decrement() {
+    this.setState(prevState => ({
+      count: prevState.count - 1
+    }));
+  }
+
+  reset() {
+    this.setState({
+      count: 0
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <button className='inc' onClick={this.increment}>Increment!</button>
+        <button className='dec' onClick={this.decrement}>Decrement!</button>
+        <button className='reset' onClick={this.reset}>Reset</button>
+        <h1>Current Count: {this.state.count}</h1>
+      </div>
+    );
+  }
+};
+```
+
+## Create a Controlled Input
+
+Your application may have more complex interactions between state and the rendered UI. 
+For example, form control elements for text input, such as `input` and `textarea`, maintain their own state in the DOM as the user types. 
+With React, you can move this mutable state into a React component's state. 
+The user's input becomes part of the application state, so React controls the value of that input field. 
+Typically, if you have React components with input fields the user can type into, it will be a controlled input form.
+
+```Javascript
+class ControlledInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      input: ''
+    };
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({
+      input: event.target.value
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <input value={this.state.input} onChange={this.handleChange}/>
+        <h4>Controlled Input:</h4>
+        <p>{this.state.input}</p>
+      </div>
+    );
+  }
+};
+```
+
+## Create a Controlled Form
+
+The last challenge showed that React can control the internal state for certain elements like input and textarea, which makes them controlled components. This applies to other form elements as well, including the regular HTML form element.
+
+```Javascript
+class MyForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      input: '',
+      submit: ''
+    };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+  handleChange(event) {
+    
+    this.setState({
+      input: event.target.value
+    });
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    this.setState(prevState => ({
+      submit: prevState.input
+    }));
+  }
+
+  render() {
+    return (
+      <div>
+        <form onSubmit={this.handleSubmit}>
+          <input type='form' value={this.state.input} onChange={this.handleChange}/>
+          <button type='submit' onClick={this.handleSubmit}>Submit!</button>
+        </form>
+  	  <h1>{this.state.submit}</h1>
+      </div>
+    );
+  }
+}
+```
+
